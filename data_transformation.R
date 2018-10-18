@@ -202,12 +202,27 @@ ggplot(data = delay, mapping = aes(x = dist, y = delay)) +
 
 delays <- flights %>%
   group_by(dest) %>%
-  summarise(
+  summarise( 
     count = n(),
     dist = mean(distance, na.rm = TRUE),
     delay = mean(arr_delay, na.rm = TRUE)
   ) %>%
   filter(count > 20, dest != 'HNL')
+
+
+# To count distinct number of carriers
+flights %>%
+  select(carrier) %>%
+  n_distinct(carrier)
+
+# To count number of each unique carrier
+flights %>%
+  count(carrier)
+# Using a bar chart
+ggplot(data = flights, mapping = aes(carrier)) +
+  geom_bar()
+
+
 
 
 # # Create a list of the data files to be imported
