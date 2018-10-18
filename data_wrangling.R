@@ -46,9 +46,12 @@ annoying[[1]]
 annoying[[`1`]]
 annoying$`1`
 
-ggplot(data = annoying, mapping = aes(x=`1`, y=`2`))+
+# To convert a gglot to a plotly graph
+library(plotly) 
+g <- ggplot(data = annoying, mapping = aes(x=`1`, y=`2`))+
   geom_point()
 
+ggplotly(g)
 # Create new column called 3 which is 2 divided by 1
 annoying <- mutate(annoying, `3` = `2`/1)
 
