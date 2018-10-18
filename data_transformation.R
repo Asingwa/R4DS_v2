@@ -71,7 +71,8 @@ head(arrange(flights, dep_delay))
 head(fastest <- arrange(flights, desc(distance/air_time)))  # For now, use the least air time/distance.
 
 # 4. Which flights travelled the longest? Which travelled the shortest?
-head(arrange(flights, (air_time)))
+head(arrange(flights, air_time)) #  Shortest
+tail(arrange(flights, air_time))# Longest
 
 ##  5.4.1 EXERCISE ##
 select(flights,tailnum)
@@ -125,20 +126,95 @@ transmute(flights,
           minute = dep_delay%%60
           )
  
+## 5.5.2 EXERCISE ##
+# 1. Curently dep_time and sched_dep_time are conventinent to look at, but hard
+# to compute with because they're not really continuous numbers. Convert them to
+# a more convenient representation of number of minutes since midnight.
+times <- select(flights,
+                   flight,
+                   dep_time,
+                   sched_dep_time,
+                   dep_delay,
+                   hour,
+                minute,
+                   arr_time,
+                   sched_arr_time,
+                   arr_delay,
+                air_time
+                   )
+times_2 <- mutate(times, 
+       dep_time_prop = dep_time*0.6,
+       sched_dep_time_prop = sched_dep_time*0.6)
+
+# 2. Compare air_time with arr_time + dep_time. What do you expect to see? What do you
+# see? What do you need to do to fix it?
+
+
+# 3. Compare dep_time, sched_dep_time and dep_delay. How would you expect those three
+# numbers to be related?
+
+
+# 4. Find the 10 most delayed flights using a ranking function. How do you want to handle
+# ties? Carefully read the documentation for nin_rank()
+
+
+# 5. What does 1:3 + 1:10 return? Why?
+
+
+# 6. What trigonometric functions does R provide?
 
 
 
+### summarise()  Collapses a data frame into a single row.
+
+summarise(flights, delay= mean(dep_delay, na.rm=TRUE))
+
+by_day <- group_by(flights, month, day)
+summarise(by_day, delay = mean(dep_delay, na.rm = TRUE))
 
 
+#(group_by((select(flights, 1:3, 'dest')), dest))
+#(group_by(flights, dest))
 
+# Exploring the relationship between the distance and average
+# delay for each location. 
+# Method 1
 
+by_dest <- group_by(flights,dest)
+delay_by_dest <- summarise(by_dest,
+                           count = n(),
+                           dist=mean(distance, na.rm = TRUE),
+                           delay = mean(arr_delay, na.rm = TRUE)
+                           )
+delay <- filter(delay_by_dest, count>20, dest !='HNL')
+
+# Plot relationship between average distance and average delay
+
+ggplot(data = delay, mapping = aes(x = dist, y = delay)) +
+  geom_point(aes(size = count), alpha = 1/3) +
+  geom_smooth(se = FALSE)
+
+# It looks as though delays increase with distance up to ~750 miles
+# and then decrease. Maybe as flights get longer there's more
+# ability to make up delays in the air?
+
+# Method 2 using pipes
+
+delays <- flights %>%
+  group_by(dest) %>%
+  summarise(
+    count = n(),
+    dist = mean(distance, na.rm = TRUE),
+    delay = mean(arr_delay, na.rm = TRUE)
+  ) %>%
+  filter(count > 20, dest != 'HNL')
 
 
 # # Create a list of the data files to be imported
-nycflights <- c("data/airlines.csv", "data/airports.csv", "data/planes.csv", "data/weather.csv")
+#nycflights <- c("data/airlines.csv", "data/airports.csv", "data/planes.csv", "data/weather.csv")
 # 
 # # Apply the function read_csv() to the data files in the list
-nycdata <-  lapply(nycflights, read_csv)
+#nycdata <-  lapply(nycflights, read_csv)
 # 
 # # Observe the data structure of the list of data files.
 # str(nycdata, give.attr = FALSE)
